@@ -22,6 +22,26 @@ export async function fetchRequests(): Promise<RequestListItem[]> {
   return res.json();
 }
 
+export type CreatedRequest = {
+  id: string;
+  message: string;
+  status: RequestStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function createRequest(message: string): Promise<CreatedRequest> {
+  const res = await fetch(`${API_URL}/requests`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to create request (${res.status})`);
+  }
+  return res.json();
+}
+
 export async function updateRequestStatus(
   id: string,
   status: RequestStatus,

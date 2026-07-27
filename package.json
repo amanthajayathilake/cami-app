@@ -8,7 +8,7 @@
     "dev:api": "npm run start:dev -w @cami/api",
     "dev:web": "npm run dev -w @cami/web",
     "build": "npm run build -w @cami/api && npm run build -w @cami/web",
-    "test": "npm run test -w @cami/api",
+    "test": "npm test --workspaces --if-present",
     "typecheck": "npm run typecheck -w @cami/api && npm run typecheck -w @cami/web",
     "seed": "npm run seed -w @cami/api",
     "migration:run": "npm run migration:run -w @cami/api"

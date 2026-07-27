@@ -1,8 +1,10 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   classifyMessage,
+  createRequest,
   fetchRequests,
   RequestStatus,
   updateRequestStatus,
@@ -11,9 +13,20 @@ import {
 const STATUSES: RequestStatus[] = ['open', 'in_progress', 'resolved'];
 
 export default function HomePage() {
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState('');
+
   const requestsQuery = useQuery({
     queryKey: ['requests'],
     queryFn: fetchRequests,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (message: string) => createRequest(message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+      setDraft('');
+    },
   });
 
   const statusMutation = useMutation({
@@ -50,6 +63,31 @@ export default function HomePage() {
           behaviour under load.
         </p>
       </div>
+
+      <form
+        className="flex flex-wrap items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const message = draft.trim();
+          if (message) {
+            createMutation.mutate(message);
+          }
+        }}
+      >
+        <input
+          className="min-w-0 flex-1 rounded border border-slate-300 px-3 py-2 text-sm"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Log a new customer request…"
+        />
+        <button
+          type="submit"
+          disabled={createMutation.isPending}
+          className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        >
+          {createMutation.isPending ? 'Adding…' : 'Add request'}
+        </button>
+      </form>
 
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-slate-200 text-sm">

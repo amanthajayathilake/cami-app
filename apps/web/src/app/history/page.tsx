@@ -17,7 +17,8 @@ export default function HistoryPage() {
         <h2 className="text-xl font-semibold">Classification history</h2>
         <p className="mt-1 text-sm text-slate-600">
           Persist classifications (schema + migration), then make this view list and filter
-          them. A provider interface for the classifier is part of the stretch.
+          them. The classifier belongs behind a provider interface that could later be an LLM
+          — see core task 5 in the README.
         </p>
       </div>
 

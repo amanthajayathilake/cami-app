@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -38,6 +41,17 @@ jobs:
       # Prefer a clean, reproducible install in CI.
       - name: Install dependencies
         run: npm ci
+
+      - name: Check submission artifacts
+        run: |
+          test -f README.md
+          test -f AI_USAGE.md
+          test -f DECISIONS.md
+          test -d apps/api
+          test -d apps/web
+
+      - name: Lint
+        run: npm run lint --if-present
 
       - name: Typecheck
         run: npm run typecheck

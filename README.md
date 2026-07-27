@@ -61,8 +61,8 @@ docker compose up --build
    list stays correct and scales with the seeded notes.
 2. **UI freshness** — Changing a request status (or classifying) succeeds in the API, but the
    table often looks stale until refresh. Fix the client behaviour.
-3. **CI** — Make the GitHub Actions workflow go green. It should fail on a clean checkout of
-   this branch today; local `npm install` workflows may still look fine.
+3. **CI** — Make the GitHub Actions workflow go green. It fails on a clean checkout of this
+   branch today, even though the same commands pass on your machine.
 4. **Controller structure** — `POST /requests/classify` packs business rules and loose typing
    into the controller. Refactor toward clearer NestJS layering and types — without a drive-by
    rewrite of the whole app.
@@ -95,3 +95,7 @@ We will also do a walkthrough of your PR — be ready to explain the diff in you
 
 Judgement, correctness, and depth of reasoning — including what you deliberately left
 undone. We do **not** score hours spent or how much of the repo you touched.
+
+Note that a green CI run is not the same as a passing submission. The pipeline checks
+install, types, tests, and build — it does not verify any of the tasks above. Green CI with
+the core tasks unaddressed scores no better than red.

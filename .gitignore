@@ -1,9 +1,7 @@
-temp_reviews/
-.work/
-.lavish/
 node_modules
 dist
 .next
+*.tsbuildinfo
 coverage
 .env
 .env.local
