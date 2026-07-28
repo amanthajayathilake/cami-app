@@ -1,31 +1,29 @@
 {
-  "name": "cami-engineering-challenge",
-  "version": "1.0.0",
-  "description": "Cami AI-native engineering hiring challenge",
-  "main": "dist/server.js",
+  "name": "cami-challenge-v2",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "typecheck": "tsc --noEmit"
+    "dev:api": "npm run start:dev -w @cami/api",
+    "dev:web": "npm run dev -w @cami/web",
+    "build": "npm run build -w @cami/api && npm run build -w @cami/web",
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck -w @cami/api && npm run typecheck -w @cami/web",
+    "seed": "npm run seed -w @cami/api",
+    "migration:run": "npm run migration:run -w @cami/api"
   },
-  "dependencies": {
-    "express": "^4.19.2",
-    "zod": "^3.23.8"
+  "overrides": {
+    "uuid": "11.1.1",
+    "glob": "13.0.6",
+    "postcss": "8.5.22",
+    "sharp": "0.35.3",
+    "next": {
+      "postcss": "8.5.22",
+      "sharp": "0.35.3"
+    }
   },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.14.10",
-    "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^7.16.0",
-    "@typescript-eslint/parser": "^7.16.0",
-    "eslint": "^8.57.0",
-    "supertest": "^7.0.0",
-    "tsx": "^4.16.2",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.4"
+  "engines": {
+    "node": ">=20"
   }
 }
