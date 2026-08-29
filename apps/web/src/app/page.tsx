@@ -1,37 +1,40 @@
-'use client';
+"use client";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   classifyMessage,
   createRequest,
   fetchRequests,
   RequestStatus,
   updateRequestStatus,
-} from '@/lib/api';
+} from "@/lib/api";
 
-const STATUSES: RequestStatus[] = ['open', 'in_progress', 'resolved'];
+const STATUSES: RequestStatus[] = ["open", "in_progress", "resolved"];
 
 export default function HomePage() {
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
 
   const requestsQuery = useQuery({
-    queryKey: ['requests'],
+    queryKey: ["requests"],
     queryFn: fetchRequests,
   });
 
   const createMutation = useMutation({
     mutationFn: (message: string) => createRequest(message),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requests'] });
-      setDraft('');
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+      setDraft("");
     },
   });
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: RequestStatus }) =>
       updateRequestStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+    },
   });
 
   const classifyMutation = useMutation({
@@ -46,8 +49,8 @@ export default function HomePage() {
   if (requestsQuery.isError) {
     return (
       <p className="text-red-700">
-        Could not load requests. Is the API running at{' '}
-        {process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}?
+        Could not load requests. Is the API running at{" "}
+        {process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}?
       </p>
     );
   }
@@ -59,8 +62,8 @@ export default function HomePage() {
       <div>
         <h2 className="text-xl font-semibold">Open requests</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Update status or run classification. Seeded volume is intentional — watch API
-          behaviour under load.
+          Update status or run classification. Seeded volume is intentional —
+          watch API behaviour under load.
         </p>
       </div>
 
@@ -85,7 +88,7 @@ export default function HomePage() {
           disabled={createMutation.isPending}
           className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
         >
-          {createMutation.isPending ? 'Adding…' : 'Add request'}
+          {createMutation.isPending ? "Adding…" : "Add request"}
         </button>
       </form>
 
@@ -104,7 +107,9 @@ export default function HomePage() {
             {requests.slice(0, 25).map((row) => (
               <tr key={row.id}>
                 <td className="max-w-md px-4 py-3">
-                  <div className="font-medium text-slate-900">{row.message}</div>
+                  <div className="font-medium text-slate-900">
+                    {row.message}
+                  </div>
                   {row.latestNotePreview ? (
                     <div className="mt-1 text-xs text-slate-500">
                       Latest note: {row.latestNotePreview}
@@ -131,7 +136,7 @@ export default function HomePage() {
                 </td>
                 <td className="px-4 py-3 tabular-nums">{row.noteCount}</td>
                 <td className="px-4 py-3">
-                  {row.category ?? '—'}
+                  {row.category ?? "—"}
                   {row.confidence != null ? (
                     <span className="ml-1 text-xs text-slate-500">
                       ({row.confidence.toFixed(2)})
@@ -143,7 +148,10 @@ export default function HomePage() {
                     type="button"
                     className="rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
                     onClick={() =>
-                      classifyMutation.mutate({ id: row.id, message: row.message })
+                      classifyMutation.mutate({
+                        id: row.id,
+                        message: row.message,
+                      })
                     }
                   >
                     Classify
@@ -156,7 +164,9 @@ export default function HomePage() {
       </div>
 
       {(statusMutation.isSuccess || classifyMutation.isSuccess) && (
-        <p className="text-sm text-slate-600">Last action reported success from the API.</p>
+        <p className="text-sm text-slate-600">
+          Last action reported success from the API.
+        </p>
       )}
     </div>
   );
