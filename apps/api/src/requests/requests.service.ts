@@ -3,6 +3,7 @@ import { CustomerRequest, RequestStatus } from "./customer-request.entity";
 import {
   ListRequestsOptions,
   REQUESTS_REPOSITORY,
+  RequestNoteItem,
   RequestsPage,
   RequestsRepositoryPort,
   SortDirection,
@@ -50,5 +51,24 @@ export class RequestsService {
 
   save(request: CustomerRequest): Promise<CustomerRequest> {
     return this.repository.save(request);
+  }
+
+  async listNotes(
+    requestId: string,
+    sortDir: SortDirection,
+  ): Promise<RequestNoteItem[]> {
+    await this.getById(requestId);
+
+    return this.repository.listNotes(requestId, sortDir);
+  }
+
+  async addNote(
+    requestId: string,
+    body: string,
+    authorName: string,
+  ): Promise<RequestNoteItem> {
+    await this.getById(requestId);
+
+    return this.repository.addNote(requestId, body, authorName);
   }
 }

@@ -5,11 +5,12 @@ import { CustomerRequest, RequestStatus } from "../customer-request.entity";
 import { RequestNote } from "../request-note.entity";
 import {
   ListRequestsOptions,
+  RequestNoteItem,
   RequestsPage,
   RequestsRepositoryPort,
+  SortDirection,
 } from "./requests.repository.port";
 
-/** Raw data shape for the list query (snake_case columns). */
 type ListRow = {
   id: string;
   message: string;
@@ -20,10 +21,9 @@ type ListRow = {
   latest_note_body: string | null;
   created_at: Date;
   updated_at: Date;
-  total_count: string; // COUNT(*) OVER() same window total on every row
+  total_count: string; // COUNT(*) OVER() - same window total on every row
 };
 
-// Maps the validated sortBy value to the actual column/alias to order by.
 const SORT_COLUMN: Record<string, string> = {
   createdAt: "r.created_at",
   status: "r.status",
@@ -41,7 +41,7 @@ export class TypeOrmRequestsRepository implements RequestsRepositoryPort {
     private readonly dataSource: DataSource,
   ) {}
 
-  // Single query for the requests page, notes included. Fixed N+1 problem with a lateral join for the latest note, and a subquery for the note counts.
+  // Fixed N+1 problem with a lateral join for the latest note, and a subquery for the note counts.
   async findAllWithStats(options: ListRequestsOptions): Promise<RequestsPage> {
     const sortColumn = SORT_COLUMN[options.sortBy] ?? "r.created_at";
     const sortDir = options.sortDir === "asc" ? "ASC" : "DESC";
@@ -135,5 +135,38 @@ export class TypeOrmRequestsRepository implements RequestsRepositoryPort {
 
   async save(request: CustomerRequest): Promise<CustomerRequest> {
     return this.requests.save(request);
+  }
+
+  async listNotes(
+    requestId: string,
+    sortDir: SortDirection,
+  ): Promise<RequestNoteItem[]> {
+    const rows = await this.notes.find({
+      where: { requestId },
+      order: { createdAt: sortDir === "asc" ? "ASC" : "DESC" },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      body: row.body,
+      authorName: row.authorName,
+      createdAt: row.createdAt.toISOString(),
+    }));
+  }
+
+  async addNote(
+    requestId: string,
+    body: string,
+    authorName: string,
+  ): Promise<RequestNoteItem> {
+    const row = this.notes.create({ requestId, body, authorName });
+    const saved = await this.notes.save(row);
+
+    return {
+      id: saved.id,
+      body: saved.body,
+      authorName: saved.authorName,
+      createdAt: saved.createdAt.toISOString(),
+    };
   }
 }
