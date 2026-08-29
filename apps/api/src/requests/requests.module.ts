@@ -4,13 +4,22 @@ import { CustomerRequest } from "./customer-request.entity";
 import { RequestNote } from "./request-note.entity";
 import { RequestsController } from "./requests.controller";
 import { RequestsService } from "./requests.service";
-import { KeywordClassifier } from "./keyword-classifier";
 import { REQUESTS_REPOSITORY } from "./persistence/requests.repository.port";
 import { TypeOrmRequestsRepository } from "./persistence/typeorm-requests.repository";
 import { ClassificationHistory } from "./classification/classification-history.entity";
 import { ClassificationService } from "./classification/classification.service";
 import { CLASSIFICATION_HISTORY_REPOSITORY } from "./classification/classification-history.repository.port";
 import { TypeOrmClassificationHistoryRepository } from "./classification/typeorm-classification-history.repository";
+import { KeywordClassifierProvider } from "./classification/keyword-classifier.provider";
+import {
+  CLASSIFIER_PROVIDER,
+  CLASSIFIER_PROVIDER_NAME,
+} from "./classification/classifier-provider";
+import { SimulatedLlmClassifierProvider } from "./classification/simulated-llm-classifier.provider";
+
+function resolveProviderName(): "keyword" | "llm" {
+  return process.env.CLASSIFIER_PROVIDER === "llm" ? "llm" : "keyword";
+}
 
 @Module({
   imports: [
@@ -24,12 +33,21 @@ import { TypeOrmClassificationHistoryRepository } from "./classification/typeorm
   providers: [
     RequestsService,
     ClassificationService,
-    KeywordClassifier,
+    KeywordClassifierProvider,
     { provide: REQUESTS_REPOSITORY, useClass: TypeOrmRequestsRepository },
     {
       provide: CLASSIFICATION_HISTORY_REPOSITORY,
       useClass: TypeOrmClassificationHistoryRepository,
     },
+    {
+      provide: CLASSIFIER_PROVIDER,
+      useFactory: (
+        keyword: KeywordClassifierProvider,
+        llm: SimulatedLlmClassifierProvider,
+      ) => (resolveProviderName() === "llm" ? llm : keyword),
+      inject: [KeywordClassifierProvider, SimulatedLlmClassifierProvider],
+    },
+    { provide: CLASSIFIER_PROVIDER_NAME, useFactory: resolveProviderName },
   ],
 })
 export class RequestsModule {}
